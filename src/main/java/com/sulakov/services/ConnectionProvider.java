@@ -1,4 +1,4 @@
-package com.sulakov.dbfeeder;
+package com.sulakov.services;
 
 import org.apache.log4j.Logger;
 
