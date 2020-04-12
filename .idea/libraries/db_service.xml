@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="db_service">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../tbot/target/classes/com/sulakov/db_service" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
