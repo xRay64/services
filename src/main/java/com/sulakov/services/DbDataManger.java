@@ -13,11 +13,11 @@ public class DbDataManger {
     private DbDataManger() {
     }
 
-    public static void saveCountryData(String name, int cases, int todayCases, int deaths, int todayDeaths, int recovered,
-                                       int active, int critical, int casesPerOneMillion, int deathsPerOneMillion,
-                                       int totalTests, int testsPerOneMillion) {
+    public static int saveCountryData(String name, int cases, int todayCases, int deaths, int todayDeaths, int recovered,
+                                      int active, int critical, int casesPerOneMillion, int deathsPerOneMillion,
+                                      int totalTests, int testsPerOneMillion) {
+        int rowCount = 0;
         try (Connection connection = CONNECTION_PROVIDER.getDbConnection()) {
-            int rowCount;
             String sql = "update country_statistic\n" +
                     "        set cases               = ?\n" +  //1
                     "          , todayCases          = ?\n" +  //2
@@ -30,19 +30,19 @@ public class DbDataManger {
                     "          , deathsPerOneMillion = ?\n" +  //9
                     "          , totalTests          = ?\n" +  //10
                     "          , testsPerOneMillion  = ?\n" +  //11
-                    "          , lastdate            = now()\n" +
                     "     where name = ?\n" + //12
-                    "       and cases               <> ?\n" + //13
-                    "       and todayCases          <> ?\n" + //14
-                    "       and deaths              <> ?\n" + //15
-                    "       and todayDeaths         <> ?\n" + //16
-                    "       and recovered           <> ?\n" + //17
-                    "       and active              <> ?\n" + //18
-                    "       and critical            <> ?\n" + //19
-                    "       and casesPerOneMillion  <> ?\n" + //20
-                    "       and deathsPerOneMillion <> ?\n" + //21
-                    "       and totalTests          <> ?\n" + //22
-                    "       and testsPerOneMillion  <> ?";    //23
+                    "       and cases                             = ?\n" + //13
+                    "       and todayCases                        = ?\n" + //14
+                    "       and deaths                            = ?\n" + //15
+                    "       and todayDeaths                       = ?\n" + //16
+                    "       and recovered                         = ?\n" + //17
+                    "       and active                            = ?\n" + //18
+                    "       and critical                          = ?\n" + //19
+                    "       and casesPerOneMillion                = ?\n" + //20
+                    "       and deathsPerOneMillion               = ?\n" + //21
+                    "       and totalTests                        = ?\n" + //22
+                    "       and testsPerOneMillion                = ?\n" + //23
+                    "       and date_format(lastdate, '%d.%m.%Y') = date_format(now(), '%d.%m.%Y')";
             PreparedStatement updateStatement = connection.prepareStatement(sql);
             updateStatement.setInt(1, cases);
             updateStatement.setInt(2, todayCases);
@@ -53,7 +53,7 @@ public class DbDataManger {
             updateStatement.setInt(7, critical);
             updateStatement.setInt(8, casesPerOneMillion);
             updateStatement.setInt(9, deathsPerOneMillion);
-            updateStatement.setInt(10,totalTests);
+            updateStatement.setInt(10, totalTests);
             updateStatement.setInt(11, testsPerOneMillion);
             updateStatement.setString(12, name);
             updateStatement.setInt(13, cases);
@@ -81,7 +81,7 @@ public class DbDataManger {
                         " , active            \n" +  //7
                         " , critical          \n" +  //8
                         " , casesPerOneMillion\n" +  //9
-                        " , deathsPerOneMillio\n" +  //10
+                        " , deathsPerOneMillion\n" +  //10
                         " , totalTests        \n" +  //11
                         " , testsPerOneMillion\n" +  //12
                         " , lastdate )" +
@@ -98,7 +98,7 @@ public class DbDataManger {
                         ",? \n" +
                         ",? \n" +
                         ",? \n" +
-                        ",now())";
+                        ",sysdate())";
                 PreparedStatement insertStatement = connection.prepareStatement(sql);
                 insertStatement.setString(1, name);
                 insertStatement.setInt(2, cases);
@@ -112,13 +112,15 @@ public class DbDataManger {
                 insertStatement.setInt(10, deathsPerOneMillion);
                 insertStatement.setInt(11, totalTests);
                 insertStatement.setInt(12, testsPerOneMillion);
+                rowCount = insertStatement.executeUpdate();
                 if (rowCount == 0) {
-                    logger.error("[DB] Error inserting country stat for " + name);
+                    logger.error("[DB] Error inserting country stat for " + name + "\n" + insertStatement.toString());
                 }
             }
         } catch (SQLException e) {
             logger.error("[DB] Error while save country date", e);
         }
+        return rowCount;
     }
 
     public static void saveUser(int tgrm_id, String first_name, String last_name, String user_name) {
@@ -139,20 +141,20 @@ public class DbDataManger {
             rowCount = statement.executeUpdate();
             if (rowCount == 0) {
                 sql = "insert into users\n" +
-                      " (tgrm_user_id\n" +
-                      " ,first_name\n" +
-                      " ,last_name\n" +
-                      " ,user_name\n" +
-                      " ,lastdate\n" +
-                      " )\n" +
-                      " values\n" +
-                      " (\n" +
-                      " ?\n" +
-                      " ,?\n" +
-                      " ,?\n" +
-                      " ,?\n" +
-                      " ,sysdate()\n" +
-                      " )";
+                        " (tgrm_user_id\n" +
+                        " ,first_name\n" +
+                        " ,last_name\n" +
+                        " ,user_name\n" +
+                        " ,lastdate\n" +
+                        " )\n" +
+                        " values\n" +
+                        " (\n" +
+                        " ?\n" +
+                        " ,?\n" +
+                        " ,?\n" +
+                        " ,?\n" +
+                        " ,sysdate()\n" +
+                        " )";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setInt(1, tgrm_id);
                 preparedStatement.setString(2, first_name);
