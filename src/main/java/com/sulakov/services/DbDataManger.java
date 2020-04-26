@@ -2,6 +2,7 @@ package com.sulakov.services;
 
 import org.apache.log4j.Logger;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -117,10 +118,22 @@ public class DbDataManger {
                     logger.error("[DB] Error inserting country stat for " + name + "\n" + insertStatement.toString());
                 }
             }
+
         } catch (SQLException e) {
             logger.error("[DB] Error while save country date", e);
         }
         return rowCount;
+    }
+
+    public static void fillCountryMVW() {
+        try (Connection connection = CONNECTION_PROVIDER.getDbConnection()) {
+            //вызов процедуры заплонения материализованного представления
+            CallableStatement callableStatement = connection.prepareCall("{call tbot_db.fill_country_cases_top_mvw()}");
+            boolean stmntRes = callableStatement.execute();
+            logger.debug("Mat view updated");
+        } catch (SQLException e) {
+            logger.error("Error while creating MVW", e);
+        }
     }
 
     public static void saveUser(int tgrm_id, String first_name, String last_name, String user_name) {
